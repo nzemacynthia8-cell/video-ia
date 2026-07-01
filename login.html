@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion - AI VIDEO STUDIO</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+background:#09090f;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+width:400px;
+background:#14141d;
+padding:40px;
+border-radius:15px;
+box-shadow:0 0 20px rgba(120,0,255,.3);
+}
+
+h2{
+color:white;
+text-align:center;
+margin-bottom:30px;
+}
+
+input{
+width:100%;
+padding:15px;
+margin:10px 0;
+background:#1f1f2d;
+border:none;
+border-radius:8px;
+color:white;
+}
+
+button{
+width:100%;
+padding:15px;
+background:#7d3cff;
+border:none;
+color:white;
+font-size:18px;
+border-radius:8px;
+cursor:pointer;
+margin-top:15px;
+}
+
+button:hover{
+background:#6228d7;
+}
+
+p{
+text-align:center;
+color:#aaa;
+margin-top:20px;
+}
+
+a{
+color:#8b5cf6;
+text-decoration:none;
+}
+</style>
+
+</head>
+<body>
+
+<div class="card">
+
+<h2>Connexion</h2>
+
+<input type="email" id="email" placeholder="Adresse Email">
+
+<input type="password" id="password" placeholder="Mot de passe">
+
+<button onclick="login()">Se connecter</button>
+
+<p>Pas encore de compte ?
+<a href="register.html">Créer un compte</a></p>
+
+</div>
+
+<script>
+
+function login(){
+
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
+
+if(email=="" || password==""){
+alert("Veuillez remplir tous les champs");
+return;
+}
+
+localStorage.setItem("connecte","oui");
+
+window.location.href="dashboard.html";
+
+}
+
+</script>
+
+</body>
+</html>

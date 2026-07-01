@@ -1,0 +1,26 @@
+<script>
+
+if(localStorage.getItem("connecte")!="oui"){
+
+    window.location.href="login.html";
+
+}
+
+document.getElementById("nom").innerHTML =
+"Utilisateur : " + localStorage.getItem("nom");
+
+function logout(){
+
+    localStorage.removeItem("connecte");
+
+    window.location.href="index.html";
+
+}
+
+function creerVideo(){
+
+    window.location.href="studio.html";
+
+}
+
+</script>

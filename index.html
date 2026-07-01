@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI VIDEO STUDIO - Créez des vidéos avec l'IA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #111118;
+      --bg-card2: #16161f;
+      --primary: #7c3aed;
+      --primary-light: #a855f7;
+      --accent: #00e5ff;
+      --accent2: #ff6b6b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: rgba(255,255,255,0.07);
+      --glow: 0 0 40px rgba(124,58,237,0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ---- NAVBAR ---- */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .btn-nav {
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-outline {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+    .btn-outline:hover { border-color: var(--primary-light); color: var(--primary-light); }
+    .btn-filled {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+    }
+    .btn-filled:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* ---- HERO ---- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 200px;
+      background: linear-gradient(to bottom, transparent, var(--bg-dark));
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 50px;
+      font-size: 0.8rem;
+      color: var(--primary-light);
+      margin-bottom: 2rem;
+      font-weight: 500;
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--primary-light), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 3rem;
+      line-height: 1.7;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 2.2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 8px 30px rgba(124,58,237,0.4);
+      transition: all 0.3s;
+    }
+    .btn-hero-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(124,58,237,0.5);
+    }
+    .btn-hero-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 2.2rem;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .btn-hero-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-3px);
+    }
+
+    /* ---- STATS ---- */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 4rem;
+      padding: 3rem 2rem;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ---- FEATURES ---- */
+    .section {
+      padding: 6rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-label {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary-light);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .section-sub {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 550px;
+      line-height: 1.7;
+      margin-bottom: 4rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(124,58,237,0.3);
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.5rem;
+    }
+    .icon-purple { background: rgba(124,58,237,0.15); color: var(--primary-light); }
+    .icon-cyan   { background: rgba(0,229,255,0.1);   color: var(--accent); }
+    .icon-red    { background: rgba(255,107,107,0.1);  color: var(--accent2); }
+    .icon-green  { background: rgba(0,200,100,0.1);    color: #00c864; }
+    .icon-orange { background: rgba(255,150,0,0.1);    color: #ff9600; }
+    .icon-pink   { background: rgba(255,0,150,0.1);    color: #ff0096; }
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ---- HOW IT WORKS ---- */
+    .how-section {
+      padding: 6rem 2rem;
+      background: rgba(255,255,255,0.01);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .how-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+    .step {
+      text-align: center;
+      padding: 2rem;
+    }
+    .step-number {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 20px rgba(124,58,237,0.4);
+    }
+    .step h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+    .step p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ---- PRICING ---- */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      transition: all 0.3s;
+    }
+    .pricing-card.popular {
+      background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(168,85,247,0.1));
+      border-color: rgba(124,58,237,0.4);
+      transform: scale(1.03);
+      box-shadow: var(--glow);
+    }
+    .popular-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.3rem 0.9rem;
+      border-radius: 50px;
+      margin-bottom: 1.5rem;
+    }
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .plan-price {
+      font-size: 3rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .plan-price span {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+    .plan-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .plan-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+    .plan-features li {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-size: 0.9rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features li i { color: var(--primary-light); font-size: 0.85rem; }
+    .btn-plan {
+      display: block;
+      text-align: center;
+      padding: 0.9rem;
+      border-radius: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    .btn-plan-outline {
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-plan-outline:hover { border-color: var(--primary-light); }
+    .btn-plan-filled {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      box-shadow: 0 6px 20px rgba(124,58,237,0.4);
+    }
+    .btn-plan-filled:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    /* ---- CTA FINAL ---- */
+    .cta-section {
+      padding: 8rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 900;
+      margin-bottom: 1.5rem;
+    }
+    .cta-section p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto 3rem;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 4rem 2rem 2rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 3rem;
+      max-width: 1200px;
+      margin: 0 auto 3rem;
+    }
+    .footer-brand p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-top: 1rem;
+      max-width: 280px;
+    }
+    .footer-col h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.7rem; }
+    .footer-col ul li a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .footer-col ul li a:hover { color: var(--text); }
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .pricing-card.popular { transform: none; }
+      .stats { gap: 2rem; }
+    }
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero-buttons { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a href="#" class="nav-logo">⚡ AI VIDEO STUDIO</a>
+    <ul class="nav-links">
+      <li><a href="#features">Fonctionnalités</a></li>
+      <li><a href="#how">Comment ça marche</a></li>
+      <li><a href="#pricing">Tarifs</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="/login.html" class="btn-nav btn-outline">Connexion</a>
+      <a href="/register.html" class="btn-nav btn-filled">Commencer</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="badge">
+        <i class="fa-solid fa-sparkles"></i>
+        Propulsé par l'Intelligence Artificielle
+      </div>
+      <h1>Créez des vidéos<br><span>professionnelles</span><br>en quelques minutes</h1>
+      <p>Entrez simplement votre idée. Notre IA génère le script, les images, la voix off, la musique et assemble tout automatiquement.</p>
+      <div class="hero-buttons">
+        <a href="/register.html" class="btn-hero-primary">
+          <i class="fa-solid fa-rocket"></i> Créer ma première vidéo
+        </a>
+        <a href="#how" class="btn-hero-secondary">
+          <i class="fa-solid fa-play"></i> Voir comment ça marche
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-number">10K+</div>
+      <div class="stat-label">Vidéos créées</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">500+</div>
+      <div class="stat-label">Utilisateurs actifs</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">50+</div>
+      <div class="stat-label">Templates IA</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">4K</div>
+      <div class="stat-label">Qualité max</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <span class="section-label">Fonctionnalités</span>
+    <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+    <p class="section-sub">Un studio IA complet pour créer des vidéos professionnelles sans compétences techniques.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon icon-purple"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h3>Génération Vidéo IA</h3>
+        <p>Décrivez votre vidéo et l'IA la crée automatiquement en 720p, 1080p ou 4K en quelques secondes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-cyan"><i class="fa-solid fa-image"></i></div>
+        <h3>Images IA</h3>
+        <p>Générez des images ultra-réalistes à partir d'un simple texte. PNG transparent, HD, variantes illimitées.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-red"><i class="fa-solid fa-microphone"></i></div>
+        <h3>Voix IA</h3>
+        <p>Centaines de voix en français, anglais, arabe et plus. Homme, femme, narrateur, publicité, cinéma.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-green"><i class="fa-solid fa-music"></i></div>
+        <h3>Musique IA</h3>
+        <p>Générez une musique originale adaptée à votre vidéo. Épique, relaxant, dynamique, cinématique.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-orange"><i class="fa-solid fa-closed-captioning"></i></div>
+        <h3>Sous-titres Auto</h3>
+        <p>Transcription automatique, traduction en 50 langues et synchronisation parfaite des sous-titres.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-pink"><i class="fa-solid fa-sliders"></i></div>
+        <h3>Studio d'édition</h3>
+        <p>Interface glisser-déposer intuitive avec timeline, effets, transitions et animations professionnelles.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <div class="how-inner">
+      <div style="text-align:center">
+        <span class="section-label">Processus</span>
+        <h2 class="section-title">Créer une vidéo en 4 étapes</h2>
+        <p class="section-sub" style="margin: 0 auto 0">Simple, rapide et professionnel.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Décrivez votre idée</h3>
+          <p>Entrez simplement ce que vous voulez créer. L'IA comprend votre intention.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>L'IA génère le contenu</h3>
+          <p>Script, images, voix off et musique créés automatiquement en quelques secondes.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Personnalisez</h3>
+          <p>Ajustez, modifiez et peaufinez chaque élément dans le studio d'édition.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3>Exportez et partagez</h3>
+          <p>Téléchargez en MP4, MOV ou GIF en qualité 4K prêt pour YouTube, TikTok, Instagram.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="text-align:center">
+    <span class="section-label">Tarifs</span>
+    <h2 class="section-title">Choisissez votre plan</h2>
+    <p class="section-sub" style="margin: 0 auto 4rem">Commencez gratuitement, évoluez selon vos besoins.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Gratuit</div>
+        <div class="plan-price">0€ <span>/ mois</span></div>
+        <div class="plan-desc">Parfait pour commencer</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> 5 vidéos / mois</li>
+          <li><i class="fa-solid fa-check"></i> Qualité 720p</li>
+          <li><i class="fa-solid fa-check"></i> 10 images IA</li>
+          <li><i class="fa-solid fa-check"></i> Voix basiques</li>
+          <li><i class="fa-solid fa-check"></i> Templates de base</li>
+        </ul>
+        <a href="/register.html" class="btn-plan btn-plan-outline">Commencer gratuitement</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="popular-badge">⭐ POPULAIRE</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">19€ <span>/ mois</span></div>
+        <div class="plan-desc">Pour les créateurs sérieux</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> Vidéos illimitées</li>
+          <li><i class="fa-solid fa-check"></i> Qualité 4K</li>
+          <li><i class="fa-solid fa-check"></i> Images illimitées</li>
+          <li><i class="fa-solid fa-check"></i> 200+ voix premium</li>
+          <li><i class="fa-solid fa-check"></i> Tous les templates</li>
+          <li><i class="fa-solid fa-check"></i> Sans filigrane</li>
+        </ul>
+        <a href="/register.html" class="btn-plan btn-plan-filled">Commencer Pro</a>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Entreprise</div>
+        <div class="plan-price">49€ <span>/ mois</span></div>
+        <div class="plan-desc">Pour les équipes et agences</div>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> Tout le plan Pro</li>
+          <li><i class="fa-solid fa-check"></i> Collaboration équipe</li>
+          <li><i class="fa-solid fa-check"></i> API accès</li>
+          <li><i class="fa-solid fa-check"></i> Stockage 1TB</li>
+          <li><i class="fa-solid fa-check"></i> Support prioritaire</li>
+        </ul>
+        <a href="/register.html" class="btn-plan btn-plan-outline">Contacter l'équipe</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-section">
+    <h2>Prêt à créer votre<br><span style="background:linear-gradient(135deg,#a855f7,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">première vidéo IA ?</span></h2>
+    <p>Rejoignez des milliers de créateurs qui utilisent AI VIDEO STUDIO pour produire du contenu professionnel.</p>
+    <a href="/register.html" class="btn-hero-primary" style="display:inline-flex">
+      <i class="fa-solid fa-rocket"></i> Commencer maintenant — C'est gratuit
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo" style="font-size:1.3rem">⚡ AI VIDEO STUDIO</a>
+        <p>Le studio de création vidéo propulsé par l'IA. Créez du contenu professionnel en quelques minutes.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Produit</h4>
+        <ul>
+          <li><a href="#features">Fonctionnalités</a></li>
+          <li><a href="#pricing">Tarifs</a></li>
+          <li><a href="#">Templates</a></li>
+          <li><a href="#">API</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Ressources</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Tutoriels</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4>
+        <ul>
+          <li><a href="#">Confidentialité</a></li>
+          <li><a href="#">Conditions</a></li>
+          <li><a href="#">Cookies</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 AI VIDEO STUDIO. Tous droits réservés.</div>
+  </footer>
+
+  <script>
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      document.querySelector('nav').style.background =
+        window.scrollY > 50 ? 'rgba(10,10,15,0.98)' : 'rgba(10,10,15,0.85)';
+    });
+
+    // Animate on scroll
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .step, .pricing-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
+<a href="login.html">
+<button class="btn-secondary">
+Connexion
+</button>
+</a>
+
+<a href="register.html">
+<button class="btn-primary">
+Commencer
+</button>
+</a>
