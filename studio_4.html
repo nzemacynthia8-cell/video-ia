@@ -151,9 +151,10 @@ async function generate(action) {
       timelineTrack.innerHTML = `<span style="color: #4aff80;"><i class="fa-solid fa-image"></i> Image générée ajoutée : ${userPrompt.substring(0, 30)}...</span>`;
 
     } else if (action.includes("Vidéo")) {
-      document.getElementById("loadingStatus").innerText = "Génération de la vidéo via AIML API...";
+      document.getElementById("loadingStatus").innerText = "Initialisation de la tâche vidéo...";
 
-      const response = await fetch(`${AIML_BASE_URL}/images/generations`, {
+      // Étape 1 : Envoyer la requête de génération vidéo à l'endpoint universel v2
+      const response = await fetch(`https://api.aimlapi.com/v2/video/generations`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${AIML_API_KEY}`,
@@ -161,19 +162,61 @@ async function generate(action) {
         },
         body: JSON.stringify({
           prompt: userPrompt,
-          model: "kling-v1", 
-          n: 1
+          model: "alibaba/wan2.2-t2v-plus"
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Erreur API Vidéo (Statut: ${response.status})`);
+        throw new Error(errorData.error?.message || `Erreur initialisation Vidéo (Statut: ${response.status})`);
       }
       
       const data = await response.json();
-      const videoUrl = data.data[0].url;
+      const generationId = data.id;
 
+      if (!generationId) {
+        throw new Error("L'API n'a pas renvoyé d'identifiant de génération.");
+      }
+
+      // Étape 2 : Polling (Vérifications régulières en attendant la fin du traitement)
+      let videoUrl = null;
+      let statusAttempts = 0;
+      const maxAttempts = 24; // Permet d'attendre jusqu'à 2 minutes (24 * 5s)
+
+      while (!videoUrl && statusAttempts < maxAttempts) {
+        statusAttempts++;
+        document.getElementById("loadingStatus").innerText = `Génération vidéo en cours... (${statusAttempts * 5}s)`;
+        
+        // Attendre 5 secondes entre chaque vérification
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const checkResponse = await fetch(`https://api.aimlapi.com/v2/video/generations`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${AIML_API_KEY}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (checkResponse.ok) {
+          const checkData = await checkResponse.json();
+          // Trouver notre tâche dans l'historique ou vérifier son statut direct
+          const currentTask = Array.isArray(checkData) ? checkData.find(task => task.id === generationId) : checkData;
+          
+          if (currentTask && (currentTask.status === "completed" || currentTask.url)) {
+            videoUrl = currentTask.url;
+            break;
+          } else if (currentTask && currentTask.status === "failed") {
+            throw new Error("Le serveur d'API a échoué à générer cette vidéo.");
+          }
+        }
+      }
+
+      if (!videoUrl) {
+        throw new Error("Délai d'attente dépassé. La vidéo prend plus de temps que prévu à être générée.");
+      }
+
+      // Étape 3 : Affichage du résultat final
       preview.innerHTML = `
         <video controls autoplay loop style="max-width: 100%; max-height: 100%; border-radius: 8px;">
           <source src="${videoUrl}" type="video/mp4">
