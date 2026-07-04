@@ -161,12 +161,11 @@ async function generate(action) {
         },
         body: JSON.stringify({
           prompt: userPrompt,
-          model: "kling-v1-5", 
+          model: "kling-v1", 
           n: 1
         })
       });
 
-      // --- APPLICATION DE VOTRE BLOC DE CORRECTION DE DEBUGGING ---
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error?.message || `Erreur API Vidéo (Statut: ${response.status})`);
