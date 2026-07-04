@@ -81,10 +81,13 @@ header button:hover { background: #d43333; }
 </div>
 
 <script>
+// Configuration des APIs
 const AIML_API_KEY = "68a206afeaefbcfe3cf72549a6e32308";
 const AIML_BASE_URL = "https://api.aimlapi.com/v1";
-const FAL_API_KEY = "3f449a84-fe77-49d2-a94a-614b2043acda:6e7755c60e87c888062c146dc035f14b";
-const FAL_MODEL_NAME = "fal-ai/luma/kling/video";
+
+// Configuration Kling AI
+const KLING_API_KEY = "IpFmbQ1XkbmozsyRTWz2AHNdwKdblzyQ4dzvFLUAe6U";
+const KLING_BASE_URL = "https://api.klingai.com/v1";
 
 document.getElementById("welcome").innerHTML = `<i class="fa-solid fa-user"></i> ${localStorage.getItem("nom") || "Créateur"}`;
 
@@ -149,40 +152,49 @@ async function generate(action) {
       timelineTrack.innerHTML = `<span style="color: #4aff80;"><i class="fa-solid fa-image"></i> Image générée ajoutée : ${userPrompt.substring(0, 30)}...</span>`;
 
     } else if (action.includes("Vidéo")) {
-      document.getElementById("loadingStatus").innerText = "Initialisation de la vidéo sur FAL IA...";
+      document.getElementById("loadingStatus").innerText = "Initialisation de la vidéo sur Kling AI...";
 
-      const response = await fetch(`https://queue.fal.run/${FAL_MODEL_NAME}`, {
+      // Création de la tâche de génération vidéo (Text-to-Video) sur Kling AI
+      const response = await fetch(`${KLING_BASE_URL}/videos/text2video`, {
         method: "POST",
         headers: {
-          "Authorization": `Key ${FAL_API_KEY}`,
+          "Authorization": `Bearer ${KLING_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          prompt: userPrompt
+          prompt: userPrompt,
+          model: "kling-v1",
+          cfg_scale: 0.5,
+          duration: "5"
         })
       });
 
       if (!response.ok) {
-        throw new Error("Erreur d'initialisation FAL IA (Problème de clé ou de modèle)");
+        throw new Error("Erreur d'initialisation Kling AI (Problème de clé ou de modèle)");
       }
       
-      let queueData = await response.json();
-      const requestId = queueData.request_id;
+      let taskData = await response.json();
+      // Extraction de l'ID de la tâche selon la réponse standard Kling (data.task_id)
+      const taskId = taskData.data?.task_id || taskData.task_id;
+      if (!taskId) throw new Error("Impossible de récupérer l'ID de la tâche Kling AI.");
 
+      // Système de polling pour suivre l'état de la vidéo
       const checkStatus = async () => {
-        const statusResponse = await fetch(`https://queue.fal.run/${FAL_MODEL_NAME}/requests/${requestId}`, {
+        const statusResponse = await fetch(`${KLING_BASE_URL}/videos/text2video/${taskId}`, {
           method: "GET",
           headers: {
-            "Authorization": `Key ${FAL_API_KEY}`
+            "Authorization": `Bearer ${KLING_API_KEY}`
           }
         });
         
         const statusData = await statusResponse.json();
-        
-        if (statusData.status === "COMPLETED") {
-          const videoUrl = statusData.logs || statusData.video?.url || (statusData.outputs && statusData.outputs[0]?.url);
-          
-          if (!videoUrl) throw new Error("FAL IA n'a pas renvoyé d'URL de vidéo valide.");
+        const currentTask = statusData.data || statusData;
+        const taskStatus = currentTask.task_status || currentTask.status;
+
+        if (taskStatus === "SUCCESS") {
+          // Extraction de l'URL du fichier mp4 final
+          const videoUrl = currentTask.task_result?.videos?.[0]?.url || currentTask.video_url;
+          if (!videoUrl) throw new Error("Kling AI n'a pas renvoyé d'URL de vidéo valide.");
 
           preview.innerHTML = `
             <video controls autoplay loop style="max-width: 100%; max-height: 100%; border-radius: 8px;">
@@ -190,12 +202,12 @@ async function generate(action) {
               Votre navigateur ne supporte pas la lecture de vidéos.
             </video>
           `;
-          timelineTrack.innerHTML = `<span style="color: #7d3cff;"><i class="fa-solid fa-film"></i> Vidéo FAL IA chargée en timeline.</span>`;
-        } else if (statusData.status === "FAILED") {
-          throw new Error("La génération du modèle FAL IA a échoué.");
+          timelineTrack.innerHTML = `<span style="color: #7d3cff;"><i class="fa-solid fa-film"></i> Vidéo Kling AI chargée en timeline.</span>`;
+        } else if (taskStatus === "FAIL" || taskStatus === "FAILED") {
+          throw new Error("La génération du modèle Kling AI a échoué.");
         } else {
-          document.getElementById("loadingStatus").innerText = `Génération en cours... Statut : ${statusData.status || "En file d'attente"}`;
-          setTimeout(checkStatus, 3000);
+          document.getElementById("loadingStatus").innerText = `Génération en cours... Statut : ${taskStatus || "Traitement"}`;
+          setTimeout(checkStatus, 4000); // Intervalles de 4 secondes pour Kling AI
         }
       };
 
