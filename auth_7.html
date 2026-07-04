@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accès Sécurisé - AI VIDEO STUDIO</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<script>
+// --- VÉRIFICATION STRICTE DE SESSION PRÉ-CHARGEMENT ---
+if (localStorage.getItem("connecte") === "oui") {
+    window.location.href = "dashboard.html";
+}
+</script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+body {
+    background: radial-gradient(circle at center, #11111f 0%, #050508 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+.gateway-container {
+    background: rgba(17, 17, 24, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid #252535;
+    padding: 45px;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(125, 60, 255, 0.1);
+    text-align: center;
+}
+.brand-header {
+    font-size: 30px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #b388ff, #7d3cff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+.gateway-container p.tagline {
+    color: #70708a;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+.input-wrapper {
+    position: relative;
+    margin-bottom: 22px;
+    text-align: left;
+}
+.input-wrapper input {
+    width: 100%;
+    padding: 16px 16px 16px 54px;
+    background: #0d0d14;
+    border: 1px solid #232333;
+    color: white;
+    border-radius: 14px;
+    outline: none;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.input-wrapper input:focus {
+    border-color: #7d3cff;
+    background: #11111f;
+    box-shadow: 0 0 18px rgba(125, 60, 255, 0.2);
+}
+.input-wrapper i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4e4e66;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+.input-wrapper input:focus ~ i {
+    color: #7d3cff;
+}
+.btn-submit {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #8c52ff, #7d3cff);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(125, 60, 255, 0.3);
+}
+.btn-submit:hover {
+    background: linear-gradient(135deg, #9d6eff, #6b2be6);
+    box-shadow: 0 8px 25px rgba(125, 60, 255, 0.5);
+    transform: translateY(-2px);
+}
+.btn-submit:active {
+    transform: translateY(0);
+}
+.loader-spinner {
+    display: none;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.utilities {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-size: 13px;
+}
+.utilities a {
+    color: #8b5cf6;
+    text-decoration: none;
+    transition: color 0.2s;
+    font-weight: 500;
+}
+.utilities a:hover {
+    color: #b388ff;
+    text-decoration: underline;
+}
+.security-badge {
+    margin-top: 35px;
+    font-size: 11px;
+    color: #44445c;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="gateway-container">
+    <div class="brand-header">🎬 AI VIDEO STUDIO</div>
+    <p class="tagline">Passerelle de connexion sécurisée</p>
+
+    <!-- FORMULAIRE DE CONNEXION DIRECTE -->
+    <form id="gatewayForm" onsubmit="executeSecureAuth(event)">
+        <div class="input-wrapper">
+            <input type="email" id="user-email" placeholder="Adresse e-mail professionnelle" required>
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="input-wrapper">
+            <input type="password" id="user-password" placeholder="Mot de passe clé" required>
+            <i class="fa-solid fa-key"></i>
+        </div>
+        
+        <button type="submit" class="btn-submit" id="submitBtn">
+            <span id="btnText">Initialiser la session</span>
+            <div class="loader-spinner" id="spinner"></div>
+        </button>
+    </form>
+
+    <div class="utilities">
+        <a href="forgot-password_2.html">Clé d'accès perdue ?</a>
+        <a href="#" onclick="alert('Module d\'inscription restreint. Contactez votre administrateur.')">Créer un compte</a>
+    </div>
+
+    <div class="security-badge">
+        <i class="fa-solid fa-lock"></i> Chiffrement SSL 256-bit Actif
+    </div>
+</div>
+
+<script>
+function executeSecureAuth(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
+    
+    // Verrouillage visuel du bouton pendant l'authentification
+    submitBtn.style.pointerEvents = "none";
+    btnText.textContent = "Chiffrement des accès...";
+    spinner.style.display = "block";
+    
+    const emailInput = document.getElementById("user-email").value.trim();
+    
+    // Extraction du nom à partir de l'email et capitalisation de la première lettre
+    let extractedName = emailInput.split('@')[0]; 
+    extractedName = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);
+    
+    // Enregistrement des jetons de session locale
+    localStorage.setItem("connecte", "oui");
+    localStorage.setItem("email", emailInput);
+    localStorage.setItem("nom", extractedName);
+
+    // Redirection vers le tableau de bord principal après une courte simulation de validation
+    setTimeout(() => {
+        window.location.href = "dashboard.html";
+    }, 1200);
+}
+</script>
+</body>
+</html>

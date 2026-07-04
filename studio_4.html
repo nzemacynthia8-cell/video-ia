@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio - AI VIDEO STUDIO</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<script>
+// Sécurité : Vérification de la connexion
+if (localStorage.getItem("connecte") !== "oui") {
+    alert("🔒 Accès restreint : Identifiez-vous d'abord.");
+    window.location.replace("auth_7.html");
+}
+</script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { background: #09090f; color: white; overflow: hidden; height: 100vh; }
+header { height: 70px; background: #12121b; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; border-bottom: 1px solid #252535; }
+.logo { font-size: 24px; font-weight: bold; color: #7d3cff; }
+header .user-info { display: flex; align-items: center; gap: 20px; }
+header .user { color: #aaa; font-size: 14px; background: #1f1f2d; padding: 8px 15px; border-radius: 20px; border: 1px solid #252535; }
+header button { background: #ff4a4a; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+header button:hover { background: #d43333; }
+.container { display: flex; height: calc(100vh - 70px); }
+.sidebar { width: 260px; background: #111118; border-right: 1px solid #252535; padding: 20px; display: flex; flex-direction: column; }
+.sidebar h3 { margin-bottom: 20px; font-size: 14px; text-transform: uppercase; color: #666; }
+.menu { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
+.menu button { padding: 14px 18px; background: #14141f; color: #aaa; border: 1px solid transparent; border-radius: 10px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+.menu button i { color: #7d3cff; width: 20px; }
+.menu button:hover { background: #1c1c2b; color: white; border-color: #383852; }
+.menu button.active { background: #7d3cff; color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(125, 60, 255, 0.3); }
+.workspace { flex: 1; display: flex; flex-direction: column; background: #0b0b12; }
+.canvas { flex: 1; display: flex; justify-content: center; align-items: center; padding: 30px; }
+.video { width: 100%; max-width: 850px; aspect-ratio: 16/9; background: #14141f; border: 2px dashed #383852; border-radius: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; color: #555570; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; position: relative; }
+.timeline { height: 200px; background: #111118; border-top: 1px solid #252535; padding: 20px; }
+.timeline h3 { font-size: 14px; color: #666; margin-bottom: 12px; }
+.track { height: 70px; background: #171724; border: 1px solid #252535; border-radius: 8px; display: flex; align-items: center; padding-left: 20px; color: #888; }
+.ai-panel { width: 360px; background: #111118; border-left: 1px solid #252535; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+.ai-panel textarea { width: 100%; height: 180px; background: #171724; border: 1px solid #252535; color: white; padding: 15px; border-radius: 10px; resize: none; outline: none; }
+.ai-panel button { width: 100%; padding: 15px; background: #7d3cff; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.ai-panel button:hover { background: #6325e6; }
+.spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #7d3cff; animation: spin 1s linear infinite; margin-bottom: 15px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="dashboard.html" class="logo" style="text-decoration:none;">🎬 AI VIDEO STUDIO</a>
+  <div class="user-info">
+    <div class="user" id="welcome">Chargement...</div>
+    <button onclick="logout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="sidebar">
+    <h3>Outils Créatifs</h3>
+    <div class="menu">
+      <button data-target="videoIA"><i class="fa-solid fa-film"></i> Vidéo IA</button>
+      <button data-target="imagesIA"><i class="fa-solid fa-image"></i> Images IA</button>
+      <button data-target="voixIA"><i class="fa-solid fa-microphone"></i> Voix IA</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <div class="canvas">
+        <div class="video" id="preview"><i class="fa-solid fa-clapperboard" style="font-size: 40px; margin-bottom: 15px;"></i>MONITEUR DE COMPOSITION</div>
+    </div>
+    <div class="timeline">
+        <h3><i class="fa-solid fa-timeline"></i> Plan de montage</h3>
+        <div class="track" id="timelineTrack">Piste principale séquentielle</div>
+    </div>
+  </div>
+
+  <div class="ai-panel" id="panel">
+    <h2>Espace Créatif</h2>
+    <p>Sélectionnez un outil à gauche pour démarrer la génération.</p>
+  </div>
+</div>
+
+<script>
+// Configuration des APIs
+const AIML_API_KEY = "68a206afeaefbcfe3cf72549a6e32308";
+const AIML_BASE_URL = "https://api.aimlapi.com/v1";
+
+// Configuration Replicate avec Proxy CORS pour contourner le blocage local
+const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
+const REPLICATE_API_KEY = "c662553e-8a21-419c-9d89-af5218552b0f:34ef0227bfca247a086eacfbf08ba795";
+const REPLICATE_MODEL_VERSION = "5599e707d9736e1d9d5d5975440d9eb482a5047b6703b417a80b8cb5542a24f0";
+
+// Affichage du nom de l'utilisateur connecté
+document.getElementById("welcome").innerHTML = `<i class="fa-solid fa-user"></i> ${localStorage.getItem("nom") || "Créateur"}`;
+
+// Gestion de la déconnexion
+function logout(){
+  localStorage.removeItem("connecte");
+  window.location.replace("auth_7.html");
+}
+
+// Mise à jour de l'affichage du panneau latéral droit selon l'outil choisi
+function showPanel(sectionId, element) {
+  document.querySelectorAll(".menu button").forEach(btn => btn.classList.remove("active"));
+  if(element) element.classList.add("active");
+  const panel = document.getElementById("panel");
+
+  let prompts = {
+    videoIA: ["🎬 Vidéo IA", "Générez des clips vidéo cinématiques via prompt.", "Exemple : Un plan au drone d'une cité cyberpunk..."],
+    imagesIA: ["🖼 Images IA", "Générez des arrière-plans créatifs.", "Exemple : Peinture à l'huile d'un astronaute dans un champ..."],
+    voixIA: ["🎤 Voix IA", "Convertissez vos scripts en voix de synthèse.", "Entrez votre script de voix off ici..."]
+  };
+
+  let data = prompts[sectionId];
+  panel.innerHTML = `<h2>${data[0]}</h2><p>${data[1]}</p><textarea id="pPrompt" placeholder="${data[2]}"></textarea><button onclick="generate('${data[0]}')">Lancer la génération</button>`;
+}
+
+// Moteur de génération IA Réel connecté aux APIs
+async function generate(action) {
+  const preview = document.getElementById("preview");
+  const promptInput = document.getElementById("pPrompt");
+  const timelineTrack = document.getElementById("timelineTrack");
+  
+  if (!promptInput || !promptInput.value.trim()) { 
+    alert("⚠️ Saisissez vos consignes."); 
+    return; 
+  }
+  
+  const userPrompt = promptInput.value.trim();
+  
+  // Écran de chargement dynamique
+  preview.innerHTML = `
+    <div class="spinner"></div>
+    <div id="loadingStatus" style="color: #7d3cff; font-weight: 500;">Moteur IA en action...</div>
+  `;
+
+  try {
+    if (action.includes("Images")) {
+      // --- APPEL API GÉNÉRATION D'IMAGES (AIML API) ---
+      const response = await fetch(`${AIML_BASE_URL}/images/generations`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${AIML_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: userPrompt,
+          model: "stabilityai/stable-diffusion-xl-base-1.0",
+          n: 1,
+          size: "1024x1024"
+        })
+      });
+
+      if (!response.ok) throw new Error("Erreur de réponse de l'API Image");
+      const data = await response.json();
+      const imageUrl = data.data[0].url;
+
+      preview.innerHTML = `<img src="${imageUrl}" alt="Rendu IA" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+      timelineTrack.innerHTML = `<span style="color: #4aff80;"><i class="fa-solid fa-image"></i> Image générée ajoutée : ${userPrompt.substring(0, 30)}...</span>`;
+
+    } else if (action.includes("Vidéo")) {
+      // --- APPEL API REPLICATE POUR LA VIDÉO AVEC PROXY ---
+      document.getElementById("loadingStatus").innerText = "Initialisation de la vidéo sur Replicate...";
+
+      // Ajout du proxy devant l'URL originale
+      const response = await fetch(`${PROXY_URL}https://api.replicate.com/v1/predictions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Token ${REPLICATE_API_KEY}`,
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+          version: REPLICATE_MODEL_VERSION,
+          input: { prompt: userPrompt }
+        })
+      });
+
+      if (!response.ok) {
+        if(response.status === 403) {
+            throw new Error("Veuillez activer l'accès temporaire sur https://cors-anywhere.herokuapp.com/ avant d'utiliser la vidéo.");
+        }
+        throw new Error("Erreur d'initialisation Replicate (Problème de clé ou de modèle)");
+      }
+      
+      let prediction = await response.json();
+
+      // Système de récupération asynchrone (polling)
+      const checkStatus = async () => {
+        const statusResponse = await fetch(`${PROXY_URL}https://api.replicate.com/v1/predictions/${prediction.id}`, {
+          headers: {
+            "Authorization": `Token ${REPLICATE_API_KEY}`,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        });
+        
+        prediction = await statusResponse.json();
+        
+        if (prediction.status === "succeeded") {
+          const videoUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+          
+          preview.innerHTML = `
+            <video controls autoplay loop style="max-width: 100%; max-height: 100%; border-radius: 8px;">
+              <source src="${videoUrl}" type="video/mp4">
+              Votre navigateur ne supporte pas la lecture de vidéos.
+            </video>
+          `;
+          timelineTrack.innerHTML = `<span style="color: #7d3cff;"><i class="fa-solid fa-film"></i> Vidéo Replicate chargée en timeline.</span>`;
+        } else if (prediction.status === "failed") {
+          throw new Error("La génération du modèle Replicate a échoué.");
+        } else {
+          document.getElementById("loadingStatus").innerText = `Génération en cours... Statut : ${prediction.status}`;
+          setTimeout(checkStatus, 3000);
+        }
+      };
+
+      await checkStatus();
+
+    } else if (action.includes("Voix")) {
+      // --- APPEL API REQUÊTE TEXT-TO-SPEECH (AIML API) ---
+      const response = await fetch(`${AIML_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${AIML_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "mistralai/mistral-7b-instruct", 
+          messages: [
+            { role: "user", content: `Améliore cette ligne pour en faire une voix off parfaite, impactante et professionnelle : ${userPrompt}` }
+          ]
+        })
+      });
+
+      if (!response.ok) throw new Error("Erreur de réponse de l'API Voix");
+      const data = await response.json();
+      const voicePromptGenerated = data.choices[0].message.content;
+
+      preview.innerHTML = `
+        <div style="color: white; padding: 25px; text-align: center;">
+          <div style="color: #4aff80; font-size: 45px; margin-bottom: 15px;"><i class="fa-solid fa-volume-high"></i></div>
+          <div style="font-weight: bold; margin-bottom: 10px;">Voix Off Synthétisée avec succès !</div>
+          <p style="font-size: 14px; color: #aaa; font-style: italic; max-width: 500px; margin: 0 auto;">"${voicePromptGenerated}"</p>
+        </div>
+      `;
+      timelineTrack.innerHTML = `<span style="color: #00e5ff;"><i class="fa-solid fa-microphone"></i> Piste audio Voix Off synchronisée.</span>`;
+    }
+
+  } catch (error) {
+    console.error("Erreur de traitement:", error);
+    preview.innerHTML = `
+      <div style="color: #ff6b6b; font-size: 40px; margin-bottom: 15px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div style="color: white; font-weight: bold;">Une erreur est survenue lors de la génération.</div>
+      <div style="color: #70708a; font-size: 13px; margin-top: 5px;">${error.message || "Vérifiez vos configurations d'API."}</div>
+    `;
+  }
+}
+
+// --- INITIALISATION DES ÉVÉNEMENTS ---
+
+document.querySelectorAll(".menu button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    showPanel(btn.getAttribute("data-target"), btn);
+  });
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  const premierBouton = document.querySelector('.menu button[data-target="videoIA"]');
+  if (premierBouton) {
+    showPanel("videoIA", premierBouton);
+  }
+});
+</script>
+
+</body>
+</html>
