@@ -88,7 +88,7 @@ const AIML_BASE_URL = "https://api.aimlapi.com/v1";
 
 // Configuration Replicate avec Proxy CORS pour contourner le blocage local
 const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
-const REPLICATE_API_KEY = "c662553e-8a21-419c-9d89-af5218552b0f:34ef0227bfca247a086eacfbf08ba795";
+const REPLICATE_API_KEY = "3f449a84-fe77-49d2-a94a-614b2043acda:6e7755c60e87c888062c146dc035f14b";
 const REPLICATE_MODEL_VERSION = "5599e707d9736e1d9d5d5975440d9eb482a5047b6703b417a80b8cb5542a24f0";
 
 // Affichage du nom de l'utilisateur connecté
@@ -137,7 +137,7 @@ async function generate(action) {
 
   try {
     if (action.includes("Images")) {
-      // --- APPEL API GÉNÉRATION D'IMAGES (AIML API) ---
+      // --- APPEL API GÉNÉRATION D'IMAGES CORRIGÉ (AIML COMPATIBILITÉ OPENAI) ---
       const response = await fetch(`${AIML_BASE_URL}/images/generations`, {
         method: "POST",
         headers: {
@@ -146,7 +146,7 @@ async function generate(action) {
         },
         body: JSON.stringify({
           prompt: userPrompt,
-          model: "stabilityai/stable-diffusion-xl-base-1.0",
+          model: "dall-e-3",
           n: 1,
           size: "1024x1024"
         })
@@ -163,7 +163,6 @@ async function generate(action) {
       // --- APPEL API REPLICATE POUR LA VIDÉO AVEC PROXY ---
       document.getElementById("loadingStatus").innerText = "Initialisation de la vidéo sur Replicate...";
 
-      // Ajout du proxy devant l'URL originale
       const response = await fetch(`${PROXY_URL}https://api.replicate.com/v1/predictions`, {
         method: "POST",
         headers: {
